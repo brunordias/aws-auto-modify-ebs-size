@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# v3.0.0
+
+# necessario instalacao do pacote jq
+# necessario instalacao do awscli
+# necessario instalacao do bc
+# contempla EXT4 e XFS
+# uso: comando -d /dev/device_linux -a /dev/device_aws -l limite -r aws_region
+
+# parametros
+while getopts ":l:a:d:r:" option;
+do
+    case $option in
+    l)
+        plimite=$OPTARG
+        ;;
+    a)
+        device_aws=$OPTARG
+        ;;
+    d)
+        device_path=$OPTARG
+        ;;
+    r)
+        aws_region=$OPTARG
+        ;;
+    *)
+        echo "invalid option $OPTARG"
+        ;;
+    esac
+done
+
+export AWS_DEFAULT_REGION=$aws_region
+
+# percentual de aumento
+pinc="10"
+
+# percentual usado do disco
+pdisk=`df $device_path --output=pcent | sed -n 2p | tr -d ' %'`
+
+# data atual
+date=`date "+%d %b %Y %H:%M:%S"`
+
+# comparacao do percentual de uso de disco
+if [ $pdisk -lt $plimite ]
+then
+    echo "$date Nothing to do. Use of $device_path is $pdisk%. Limit is $plimite%"
+fi
+if [ $pdisk -gt $plimite ]
+then
+    echo "$date Increasing. Use of $device_path is greater than $plimite%"
+    sdisk=`df -h -BG $device_path --output=size | sed -n 2p | tr -d ' G'`
+    psize=`echo "$sdisk * 0.$pinc / 1" | bc`
+    tsize=`echo "$sdisk + $psize" | bc`
+    instance_id=`wget -q -O - http://169.254.169.254/latest/meta-data/instance-id`
+    qtde_devices=`aws ec2 describe-instances --instance-ids $instance_id | jq '.Reservations[].Instances[].BlockDeviceMappings|length'`
+    device_sd=`echo $device_aws | cut -d '/' -f 3`
+    for (( c=0; c<$qtde_devices; c++ ))
+    do
+        device=`aws ec2 describe-instances --instance-ids $instance_id | jq '.Reservations[].Instances[].BlockDeviceMappings['$c'].DeviceName' | cut -d '/' -f 3 | tr -d '"'`
+        volume_id=`aws ec2 describe-instances --instance-ids $instance_id | jq '.Reservations[].Instances[].BlockDeviceMappings['$c'].Ebs.VolumeId' | tr -d '"'`
+        if [ "$device_sd" == $device ]
+        then
+            aws ec2 modify-volume --volume-id $volume_id --size $tsize
+            sleep 30
+            if [ $device_path == "/dev/nvme0n1p1" ]
+	        then
+                growpart /dev/nvme0n1 1
+            fi
+            if [ $device_path == "/dev/xvda1" ]
+	        then
+                growpart /dev/xvda 1
+            fi
+            fstype=`df $device_path --output=fstype | sed -n 2p`
+            if [ $fstype == 'ext4' ]
+            then
+                resize2fs $device_path
+            fi
+            if [ $fstype == 'xfs' ]
+            then
+                xfs_growfs $device_path
+            fi
+        fi
+    done
+fi

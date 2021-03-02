@@ -59,3 +59,9 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 15 * * * * root auto-modify-ebs-size -d /dev/nvme0n1p1 -a /dev/sda1 -l 85 -r us-east-1 >> /var/log/auto-modify-ebs-size.log
 ```
+## Ubuntu 20.04
+```
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+15 * * * * root auto-modify-ebs-size -d /dev/root -a /dev/sda1 -l 85 -r us-east-1 >> /var/log/auto-modify-ebs-size.log
+```

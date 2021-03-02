@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# v3.0.0
+# v3.1.0
 
 # necessario instalacao do pacote jq
 # necessario instalacao do awscli
@@ -64,6 +64,10 @@ then
             aws ec2 modify-volume --volume-id $volume_id --size $tsize
             sleep 30
             if [ $device_path == "/dev/nvme0n1p1" ]
+	        then
+                growpart /dev/nvme0n1 1
+            fi
+            if [ $device_path == "/dev/root" ]
 	        then
                 growpart /dev/nvme0n1 1
             fi

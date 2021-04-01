@@ -6,7 +6,7 @@
 # necessario instalacao do awscli
 # necessario instalacao do bc
 # contempla EXT4 e XFS
-# uso: comando -d /dev/device_linux -a /dev/device_aws -l limite -r aws_region
+# uso: comando -d /dev/device_linux -a /dev/device_aws -l limite
 
 # parametros
 while getopts ":l:a:d:r:" option;
@@ -21,16 +21,13 @@ do
     d)
         device_path=$OPTARG
         ;;
-    r)
-        aws_region=$OPTARG
-        ;;
     *)
         echo "invalid option $OPTARG"
         ;;
     esac
 done
 
-export AWS_DEFAULT_REGION=$aws_region
+export AWS_DEFAULT_REGION=`wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/document|grep region|awk -F\" '{print $4}'`
 
 # percentual de aumento
 pinc="10"

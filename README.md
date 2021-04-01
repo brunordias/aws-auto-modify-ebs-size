@@ -41,27 +41,26 @@ Copie o script para `/usr/local/sbin/` e torne-o executável.
  * `-d` | path do device Linux.
  * `-a` | path do device AWS.
  * `-l` | limite de tamanho de utilização do disco para realizar o resize
- * `-r` | região da AWS onde está a EC2.
 
 # Uso
 ```
-$ auto-modify-ebs-size -d /dev/device_linux -a /dev/device_aws -l limite -r aws_region
+$ auto-modify-ebs-size -d /dev/device_linux -a /dev/device_aws -l limite
 ```
 
 # Exemplo
 ```
-$ auto-modify-ebs-size -d /dev/nvme0n1p1 -a /dev/sda1 -l 85 -r us-east-1
+$ auto-modify-ebs-size -d /dev/nvme0n1p1 -a /dev/sda1 -l 85
 ```
 
 # Exemplo Cron
 ```
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-15 * * * * root auto-modify-ebs-size -d /dev/nvme0n1p1 -a /dev/sda1 -l 85 -r us-east-1 >> /var/log/auto-modify-ebs-size.log
+15 * * * * root auto-modify-ebs-size -d /dev/nvme0n1p1 -a /dev/sda1 -l 85 >> /var/log/auto-modify-ebs-size.log
 ```
 ## Ubuntu 20.04
 ```
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-15 * * * * root auto-modify-ebs-size -d /dev/root -a /dev/sda1 -l 85 -r us-east-1 >> /var/log/auto-modify-ebs-size.log
+15 * * * * root auto-modify-ebs-size -d /dev/root -a /dev/sda1 -l 85 >> /var/log/auto-modify-ebs-size.log
 ```
